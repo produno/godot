@@ -1,0 +1,33 @@
+name: Build macOS Export Templates
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    env:
+      PCK_KEY: ${{ secrets.PCK_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          brew install scons
+          brew install llvm
+
+      - name: Build release template
+        run: |
+          scons platform=macos target=template_release arch=universal pck_encryption_key=$PCK_KEY
+
+      - name: Build debug template
+        run: |
+          scons platform=macos target=template_debug arch=universal pck_encryption_key=$PCK_KEY
+
+      - name: Upload templates
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-templates
+          path: bin/*
