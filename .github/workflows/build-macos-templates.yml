@@ -18,16 +18,50 @@ jobs:
           brew install scons
           brew install llvm
 
-      - name: Build release template
+      # -------------------------
+      # Build ARM64 templates
+      # -------------------------
+      - name: Build release template (arm64)
         run: |
-          scons platform=macos target=template_release arch=universal pck_encryption_key=$PCK_KEY
+          scons platform=macos target=template_release arch=arm64 pck_encryption_key="${PCK_KEY}"
 
-      - name: Build debug template
+      - name: Build debug template (arm64)
         run: |
-          scons platform=macos target=template_debug arch=universal pck_encryption_key=$PCK_KEY
+          scons platform=macos target=template_debug arch=arm64 pck_encryption_key="${PCK_KEY}"
 
+      # -------------------------
+      # Build x86_64 templates
+      # -------------------------
+      - name: Build release template (x86_64)
+        run: |
+          scons platform=macos target=template_release arch=x86_64 pck_encryption_key="${PCK_KEY}"
+
+      - name: Build debug template (x86_64)
+        run: |
+          scons platform=macos target=template_debug arch=x86_64 pck_encryption_key="${PCK_KEY}"
+
+      # -------------------------
+      # Merge into universal binaries
+      # -------------------------
+      - name: Create universal binaries with lipo
+        run: |
+          mkdir -p bin/universal
+
+          lipo -create \
+            bin/godot.macos.template_release.arm64 \
+            bin/godot.macos.template_release.x86_64 \
+            -output bin/universal/godot.macos.template_release.universal
+
+          lipo -create \
+            bin/godot.macos.template_debug.arm64 \
+            bin/godot.macos.template_debug.x86_64 \
+            -output bin/universal/godot.macos.template_debug.universal
+
+      # -------------------------
+      # Upload final templates
+      # -------------------------
       - name: Upload templates
         uses: actions/upload-artifact@v4
         with:
-          name: macos-templates
-          path: bin/*
+          name: macos-universal-templates
+          path: bin/universal/*
