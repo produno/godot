@@ -11,7 +11,7 @@ jobs:
       PCK_KEY: ${{ secrets.PCK_KEY }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -27,7 +27,7 @@ jobs:
           scons platform=macos target=template_debug arch=universal pck_encryption_key=$PCK_KEY
 
       - name: Upload templates
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-templates
           path: bin/*
