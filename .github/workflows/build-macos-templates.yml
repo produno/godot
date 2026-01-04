@@ -1,4 +1,4 @@
-name: Build macOS ARM64 Vulkan Export Templates
+name: Build macOS Export Templates (ARM64 Vulkan + x86_64 GLES3)
 
 on:
   workflow_dispatch:
@@ -19,7 +19,10 @@ jobs:
           brew install llvm
           brew install molten-vk
 
-      - name: Build release template (arm64, Vulkan)
+      # ---------------------------------------------------------
+      # Apple Silicon (ARM64) — Vulkan — Forward+ — HDR supported
+      # ---------------------------------------------------------
+      - name: Build ARM64 Release (Vulkan)
         run: |
           scons platform=macos \
                 target=template_release \
@@ -27,7 +30,7 @@ jobs:
                 vulkan_sdk_path=/opt/homebrew/opt/molten-vk \
                 pck_encryption_key="${PCK_KEY}"
 
-      - name: Build debug template (arm64, Vulkan)
+      - name: Build ARM64 Debug (Vulkan)
         run: |
           scons platform=macos \
                 target=template_debug \
@@ -35,8 +38,30 @@ jobs:
                 vulkan_sdk_path=/opt/homebrew/opt/molten-vk \
                 pck_encryption_key="${PCK_KEY}"
 
+      # ---------------------------------------------------------
+      # Intel (x86_64) — GLES3 — Compatibility — No HDR
+      # ---------------------------------------------------------
+      - name: Build x86_64 Release (GLES3 only)
+        run: |
+          scons platform=macos \
+                target=template_release \
+                arch=x86_64 \
+                vulkan=no \
+                pck_encryption_key="${PCK_KEY}"
+
+      - name: Build x86_64 Debug (GLES3 only)
+        run: |
+          scons platform=macos \
+                target=template_debug \
+                arch=x86_64 \
+                vulkan=no \
+                pck_encryption_key="${PCK_KEY}"
+
+      # ---------------------------------------------------------
+      # Upload all templates
+      # ---------------------------------------------------------
       - name: Upload templates
         uses: actions/upload-artifact@v4
         with:
-          name: macos-arm64-vulkan-templates
+          name: macos-templates-arm64-vulkan-and-x86_64-gles3
           path: bin/*
